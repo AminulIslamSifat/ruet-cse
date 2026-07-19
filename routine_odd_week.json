@@ -1,0 +1,73 @@
+{
+  "periods": ["1st", "2nd", "3rd", "4th", "5th", "6th", "Break", "7th", "8th", "9th"],
+  "times": ["8:00-8:50", "8:50-9:40", "9:40-10:30", "10:50-11:40", "11:40-12:30", "12:30-1:20", "1:20-2:30", "2:30-", "---", "-4:00"],
+  "routine": [
+    {
+      "day": "Saturday",
+      "slots": [
+        { "course": null },
+        { "course": null },
+        { "course": null },
+        { "course": null },
+        { "course": "CSE 2101", "teacher": "FAR - 102" },
+        { "course": "HUM 2113", "teacher": "TKS - 102" },
+        { "course": null },
+        { "course": "CSE 2104", "teacher": "MZI - HW Lab", "roll": "31-60", "colspan": 3, "isLab": true }
+      ]
+    },
+    {
+      "day": "Sunday",
+      "slots": [
+        { "course": null },
+        { "course": "HUM 2113", "teacher": "NFI - 103" },
+        { "course": "EEE 2151", "teacher": "MMI/MNA - 103" },
+        { "course": null },
+        { "course": null },
+        { "course": null },
+        { "course": null },
+        { "course": "EEE 2152", "teacher": "TSJ - Machine Lab(West)", "roll": "1-30", "colspan": 3, "isLab": true }
+      ]
+    },
+    {
+      "day": "Monday",
+      "slots": [
+        { "course": null },
+        { "course": null },
+        { "course": null },
+        { "course": "HUM 2113", "teacher": "TKS - 103" },
+        { "course": "MATH 2113", "teacher": "AH - 103" },
+        { "course": "EEE 2151", "teacher": "MMI/MNA - 103" },
+        { "course": null },
+        { "course": "CSE 2102", "teacher": "FAR - NW Lab", "roll": "1-30", "colspan": 3, "isLab": true }
+      ]
+    },
+    {
+      "day": "Tuesday",
+      "slots": [
+        { "course": null },
+        { "course": "CSE 2103", "teacher": "BA/MZI - 101" },
+        { "course": "MATH 2113", "teacher": "AH - 101" },
+        { "course": "EEE 2151", "teacher": "MMI/MNA - 101" },
+        { "course": "CSE 2101", "teacher": "FAR - 101" },
+        { "course": null },
+        { "course": null },
+        { "course": null },
+        { "course": null },
+        { "course": null }
+      ]
+    },
+    {
+      "day": "Wednesday",
+      "slots": [
+        { "course": null },
+        { "course": "CSE 2103", "teacher": "BA/MZI - 101" },
+        { "course": "CSE 2103", "teacher": "BA/MZI - 101" },
+        { "course": "CSE 2101", "teacher": "FAR - 101" },
+        { "course": "MATH 2113", "teacher": "MSR - 101" },
+        { "course": null },
+        { "course": null },
+        { "course": "CSE 2104/CSE 2102", "teacher": "BA/FAR - HW Lab/PG Lab", "roll": "1-30, 31-60", "colspan": 3, "isLab": true }
+      ]
+    }
+  ]
+}

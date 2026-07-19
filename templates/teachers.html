@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subject Teachers — RUET CSE</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="wide">
+
+<div class="top-nav">
+  <a href="/" class="back">← Home</a>
+  <span style="color:var(--border)">·</span>
+  <span class="page-title">🧑‍🏫 Subject Teachers</span>
+</div>
+
+<div class="section-header">
+  <span class="section-label">{{ subjects|length }} subject(s)</span>
+  <button class="btn btn-primary" onclick="document.getElementById('addModal').classList.add('active')">+ Add Subject</button>
+</div>
+
+{% if subjects %}
+{% for s in subjects %}
+<div class="card">
+  <div class="card-header">
+    <div>
+      <div class="card-subject">{{ s.subject }}</div>
+      <div class="card-title-text">{{ s.title or '—' }}</div>
+      <div class="type-badge type-{{ s.type }}">{{ s.type }}</div>
+      <div class="teachers-preview">
+        👤 T1: {{ s.get('1', {}).get('name', '—') }} &nbsp;·&nbsp;
+        👤 T2: {{ s.get('2', {}).get('name', '—') }}
+      </div>
+    </div>
+  </div>
+  <div class="card-actions">
+    <a href="/teachers/edit/{{ s._id }}" class="btn btn-edit btn-sm">✏️ Edit</a>
+    <form method="POST" action="/teachers/delete/{{ s._id }}" style="display:inline" onsubmit="return confirm('Delete this subject and its teacher data?')">
+      <button type="submit" class="btn btn-danger btn-sm">🗑 Delete</button>
+    </form>
+  </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="empty">No subjects yet ✨<br>Click "+ Add Subject" to create one.</div>
+{% endif %}
+
+<!-- Add Modal -->
+<div id="addModal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-title">Add Subject</div>
+    <form method="POST" action="/teachers/add">
+      <label>Subject Code (e.g. CSE 2101)</label>
+      <input type="text" name="subject" required placeholder="CSE 2101">
+      <label>Course Title</label>
+      <input type="text" name="title" placeholder="Discrete Mathematics">
+      <label>Type</label>
+      <select name="type">
+        <option value="sessional">Sessional</option>
+        <option value="theory">Theory</option>
+      </select>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <button type="button" class="btn" style="background:var(--border);color:var(--text)" onclick="document.getElementById('addModal').classList.remove('active')">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+  </div>
+</body>
+</html>

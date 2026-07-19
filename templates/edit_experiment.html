@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edit {{ subject.subject }} Experiments</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="wide">
+
+<div class="top-nav">
+  <a href="/experiments" class="back">← Back</a>
+</div>
+
+<div style="margin-bottom:1.5rem">
+  <div class="page-title">{{ subject.subject }}</div>
+  <div class="page-sub">Editing experiments &amp; metadata</div>
+</div>
+
+<!-- Meta section -->
+<div class="section">
+  <div class="section-title">Subject Metadata</div>
+  <form method="POST">
+    <input type="hidden" name="action" value="update_meta">
+    <label>Subject Type</label>
+    <select name="type">
+      <option value="sessional" {% if subject.type == 'sessional' %}selected{% endif %}>Sessional</option>
+      <option value="theory" {% if subject.type == 'theory' %}selected{% endif %}>Theory</option>
+    </select>
+    <div style="margin-top:1rem">
+      <button type="submit" class="btn btn-save">Save Metadata</button>
+    </div>
+  </form>
+</div>
+
+<!-- Experiments section -->
+<div class="section">
+  <div class="section-title">Experiments / Assignments</div>
+
+  {% if experiments %}
+  <table class="exp-table">
+    <thead>
+      <tr>
+        <th>No.</th>
+        <th>Title</th>
+        <th>Type</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for no, exp in experiments.items() %}
+    <tr>
+      <td class="exp-no">{{ no }}</td>
+      <td>{{ exp.title }}</td>
+      <td>
+        <span class="exp-type-badge {% if exp.type == 'Lab Report' %}lab{% elif exp.type == 'Assignment' %}assignment{% else %}project{% endif %}">
+          {{ exp.type }}
+        </span>
+      </td>
+      <td style="text-align:right">
+        <form method="POST" style="display:inline" onsubmit="return confirm('Delete Exp {{ no }}?')">
+          <input type="hidden" name="action" value="delete_exp">
+          <input type="hidden" name="exp_no" value="{{ no }}">
+          <button type="submit" class="btn btn-danger btn-sm">🗑</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-row">No experiments added yet.</div>
+  {% endif %}
+
+  <!-- Add experiment -->
+  <div class="add-exp-form">
+    <div class="section-title" style="margin-bottom:.6rem">Add Experiment</div>
+    <form method="POST">
+      <input type="hidden" name="action" value="add_exp">
+      <label>Exp No.</label>
+      <input type="text" name="exp_no" placeholder="e.g. 1" style="max-width:90px;display:inline-block">
+      <label>Title</label>
+      <input type="text" name="exp_title" placeholder="Experiment or assignment title" required>
+      <label>Type</label>
+      <select name="exp_type">
+        <option value="Lab Report">Lab Report</option>
+        <option value="Assignment">Assignment</option>
+        <option value="Project">Project</option>
+      </select>
+      <div style="margin-top:.85rem">
+        <button type="submit" class="btn btn-primary">+ Add</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+  </div>
+</body>
+</html>

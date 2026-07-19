@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Routine Editor — RUET CSE</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="shell">
+
+    <div class="topbar">
+      <a href="/" class="back">← Home</a>
+      <h1>Routine Editor</h1>
+      <select id="weekSelect" style="width:auto;flex:0 0 auto">
+        <option value="odd">Odd week</option>
+        <option value="even">Even week</option>
+      </select>
+      <button class="btn btn-ghost" id="reloadBtn">↺ Reload</button>
+      <button class="btn btn-ghost" id="addDayBtn">+ Day</button>
+      <button class="btn btn-primary" id="saveBtn">💾 Save</button>
+    </div>
+
+    <div id="dayList"></div>
+
+    <div class="save-bar">
+      <span class="status" id="statusMsg">Ready.</span>
+    </div>
+
+  </div>
+
+  <div id="toast"></div>
+  <script src="{{ url_for('static', filename='js/editor.js') }}"></script>
+</body>
+</html>

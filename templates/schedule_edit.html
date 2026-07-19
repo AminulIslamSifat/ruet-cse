@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edit Schedule</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="wide">
+<a href="/schedule" class="back">← Back to schedules</a>
+<h1>Edit Schedule</h1>
+<form method="POST">
+<label>Type</label>
+<select disabled style="opacity: 0.6; cursor: not-allowed;">
+<option>{{ schedule.type }}</option>
+</select>
+<input type="hidden" name="type" value="{{ schedule.type }}">
+<label>Subject</label>
+<input type="text" name="subject" required value="{{ schedule.subject }}">
+<label>Teacher</label>
+<input type="text" name="teacher" required value="{{ schedule.teacher }}">
+<label>Date</label>
+<input type="date" name="date" value="{{ schedule.date or '' }}">
+<label>Time</label>
+<input type="text" name="time" value="{{ schedule.time or '' }}" placeholder="e.g. 10:00 AM or TBD">
+<label>Topic</label>
+<input type="text" name="topic" value="{{ schedule.topic or '' }}">
+<label>Syllabus</label>
+<textarea name="syllabus">{{ schedule.syllabus or '' }}</textarea>
+<div class="actions">
+<button type="submit" class="btn btn-primary">Save Changes</button>
+<a href="/schedule" class="btn btn-cancel">Cancel</a>
+</div>
+</form>
+  </div>
+</body>
+</html>

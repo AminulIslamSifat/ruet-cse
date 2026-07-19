@@ -1,0 +1,13 @@
+[project]
+name = "ruet-cse"
+version = "0.1.0"
+description = "Merged routine, schedule, teachers and experiments app for RUET CSE"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "flask==3.1.1",
+    "pymongo>=4.13.2",
+    "dnspython>=2.6.0",
+    "gunicorn==23.0.0",
+    "python-dotenv==1.1.0",
+]

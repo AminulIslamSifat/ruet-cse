@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ week|capitalize }} Week Routine — RUET CSE</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='site.css') }}">
+</head>
+<body>
+  <main class="page routine-layout full-bleed">
+    <section class="card panel">
+      <div class="table-wrap" id="routineContainer">
+        <p class="subtle" style="padding:24px;">Loading routine…</p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const ROUTINE_DATA = {{ data | tojson }};
+
+    function formatSup(text) {
+      return String(text).replace(/(\d+)(st|nd|rd|th)/g, '$1<sup>$2</sup>');
+    }
+
+    function autoMerge(routine) {
+      return routine.map(dayInfo => {
+        const slots = dayInfo.slots, merged = [];
+        let i = 0;
+        while (i < slots.length) {
+          const s = slots[i];
+          if (s.course && !s.colspan) {
+            let run = 1;
+            while (i + run < slots.length &&
+                   slots[i + run].course === s.course &&
+                   slots[i + run].teacher === s.teacher &&
+                   !slots[i + run].colspan && run < 4) run++;
+            if (run >= 2) {
+              const rolls = [...new Set(slots.slice(i, i+run).map(x => x.roll).filter(Boolean))].join(', ');
+              merged.push({ ...s, roll: rolls || s.roll, colspan: run, isLab: s.isLab });
+              i += run; continue;
+            }
+          }
+          merged.push(s); i++;
+        }
+        return { ...dayInfo, slots: merged };
+      });
+    }
+
+    function render(data) {
+      const routine = autoMerge(data.routine);
+      const rows = routine.map(day => {
+        const cells = day.slots.map(slot => {
+          const cs = slot.colspan ? ` colspan="${slot.colspan}"` : '';
+          const cls = slot.isLab ? ' class="lab-slot"' : '';
+          const content = slot.course
+            ? `<span class="course">${slot.course}</span>
+               ${slot.teacher ? `<span class="teacher">${slot.teacher}</span>` : ''}
+               ${slot.roll    ? `<span class="pill">${slot.roll}</span>`       : ''}`
+            : '<span class="empty-slot">-</span>';
+          return `<td${cs}${cls}>${content}</td>`;
+        }).join('');
+        return `<tr><th class="label-cell" scope="row">${day.day}</th>${cells}</tr>`;
+      }).join('');
+
+      document.getElementById('routineContainer').innerHTML = `
+        <table class="routine-table">
+          <thead>
+            <tr>
+              <th scope="col">Day / Period</th>
+              ${data.periods.map(p => `<th scope="col">${formatSup(p)}</th>`).join('')}
+            </tr>
+            <tr>
+              <th scope="col">Time</th>
+              ${data.times.map(t => `<th scope="col">${t}</th>`).join('')}
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>`;
+    }
+
+    render(ROUTINE_DATA);
+  </script>
+</body>
+</html>

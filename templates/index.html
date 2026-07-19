@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RUET CSE — Hub</title>
+  <meta name="description" content="Central hub for RUET CSE C section — routines, schedule, teachers and experiments.">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    .section-label {
+      font-size: .65rem;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: var(--muted);
+      margin: 1.75rem 0 .6rem;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+
+    <div class="hero">
+      <h1>RUET CSE</h1>
+      <p>Routines, schedule, subject teachers and experiments — all in one place.</p>
+    </div>
+
+    <p class="section-label">📅 Routine</p>
+    <div class="card-grid">
+
+      <a class="nav-card" href="/routine/odd">
+        <span class="icon">🗓</span>
+        <h2>Odd Week Routine</h2>
+        <p>View the full timetable for odd weeks.</p>
+      </a>
+
+      <a class="nav-card" href="/routine/even">
+        <span class="icon">📆</span>
+        <h2>Even Week Routine</h2>
+        <p>View the full timetable for even weeks.</p>
+      </a>
+
+      <a class="nav-card" href="/routine/editor">
+        <span class="icon">✏️</span>
+        <h2>Routine Editor</h2>
+        <p>Edit odd &amp; even week slots directly. Saves to file and MongoDB.</p>
+      </a>
+
+    </div>
+
+    <p class="section-label">📋 Academic</p>
+    <div class="card-grid">
+
+      <a class="nav-card" href="/schedule">
+        <span class="icon">📋</span>
+        <h2>Schedule</h2>
+        <p>CT, assignments, semester finals and backlog dates.</p>
+        {% if schedule_count %}
+        <span class="badge-count">{{ schedule_count }} items</span>
+        {% endif %}
+      </a>
+
+      <a class="nav-card" href="/teachers">
+        <span class="icon">👩‍🏫</span>
+        <h2>Subject Teachers</h2>
+        <p>Manage course teacher data used for cover pages.</p>
+        {% if teachers_count %}
+        <span class="badge-count">{{ teachers_count }} subjects</span>
+        {% endif %}
+      </a>
+
+      <a class="nav-card" href="/experiments">
+        <span class="icon">🧪</span>
+        <h2>Experiments</h2>
+        <p>Lab experiment and assignment titles per subject.</p>
+        {% if experiments_count %}
+        <span class="badge-count">{{ experiments_count }} subjects</span>
+        {% endif %}
+      </a>
+
+    </div>
+  </div>
+
+  <div id="toast"></div>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edit {{ subject.subject }} Teachers</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="wide">
+
+<div class="top-nav">
+  <a href="/teachers" class="back">← Back</a>
+</div>
+
+<div style="margin-bottom:1.5rem">
+  <div class="page-title">{{ subject.subject }}</div>
+  <div class="page-sub">Editing course info and teacher assignments</div>
+</div>
+
+<!-- Meta section -->
+<div class="section">
+  <div class="section-title">Course Info</div>
+  <form method="POST">
+    <input type="hidden" name="action" value="update_meta">
+    <label>Course Title</label>
+    <input type="text" name="title" value="{{ subject.title or '' }}" placeholder="e.g. Discrete Mathematics">
+    <label>Subject Type</label>
+    <select name="type">
+      <option value="sessional" {% if subject.type == 'sessional' %}selected{% endif %}>Sessional</option>
+      <option value="theory" {% if subject.type == 'theory' %}selected{% endif %}>Theory</option>
+    </select>
+    <div style="margin-top:1rem">
+      <button type="submit" class="btn btn-save">Save Course Info</button>
+    </div>
+  </form>
+</div>
+
+<!-- Teacher 1 -->
+{% for key, label_text in [('1', 'Teacher 1'), ('2', 'Teacher 2')] %}
+{% set teacher = subject.get(key, {}) %}
+<div class="section">
+  <div class="section-title">
+    <span class="t-badge">T{{ key }}</span>
+    {{ label_text }}
+  </div>
+  <form method="POST">
+    <input type="hidden" name="action" value="update_teacher">
+    <input type="hidden" name="key" value="{{ key }}">
+    <label>Full Name</label>
+    <input type="text" name="name" value="{{ teacher.get('name', '') }}" placeholder="Dr. John Doe">
+    <label>Designation</label>
+    <input type="text" name="designation" value="{{ teacher.get('designation', '') }}" placeholder="Assistant Professor">
+    <div class="grid-2">
+      <div>
+        <label>Department (full)</label>
+        <input type="text" name="department" value="{{ teacher.get('department', '') }}" placeholder="Computer Science & Engineering">
+      </div>
+      <div>
+        <label>Dept Short</label>
+        <input type="text" name="dept_short" value="{{ teacher.get('dept_short', '') }}" placeholder="CSE">
+      </div>
+    </div>
+    <div style="margin-top:1rem">
+      <button type="submit" class="btn btn-save">Save {{ label_text }}</button>
+    </div>
+  </form>
+</div>
+{% endfor %}
+
+  </div>
+</body>
+</html>

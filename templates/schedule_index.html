@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schedule — RUET CSE</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="wide">
+
+    <div class="topbar">
+      <a href="/" class="back">← Home</a>
+      <h1>Schedule</h1>
+      <button class="btn btn-primary" onclick="document.getElementById('addForm').classList.add('active')">+ Add New</button>
+    </div>
+
+    <div class="controls">
+      <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search subject, teacher, topic…">
+      <button class="filter-btn active" data-filter="all">All</button>
+      {% for t in types %}
+      <button class="filter-btn" data-filter="{{ t|lower|replace(' ','_') }}">{{ t }}</button>
+      {% endfor %}
+    </div>
+
+    <div id="scheduleContainer">
+      {% if schedules %}
+      {% for s in schedules %}
+      <div class="schedule-card"
+           data-subject="{{ s.subject }}"
+           data-teacher="{{ s.teacher }}"
+           data-topic="{{ s.topic or '' }}"
+           data-type="{{ s.type|lower|replace(' ','_') }}">
+        <div class="card-header">
+          <span class="badge badge-{{ s.type|lower|replace(' ','_') }}">{{ s.type }}</span>
+          {% if s.countdown %}
+          <span class="countdown {{ s.countdown_class }}">{{ s.countdown }}</span>
+          {% endif %}
+        </div>
+        <div class="card-subject">{{ s.subject }}</div>
+        <div class="card-meta">
+          <span>👤 {{ s.teacher }}</span>&nbsp;·&nbsp;
+          <span>📅 {{ s.date or 'TBD' }}</span>&nbsp;·&nbsp;
+          <span>🕐 {{ s.time or 'TBD' }}</span>
+        </div>
+        {% if s.topic or s.syllabus %}
+        <div class="card-details">
+          {% if s.topic %}<div>📌 <strong>Topic:</strong> {{ s.topic }}</div>{% endif %}
+          {% if s.syllabus %}<div>📖 <strong>Syllabus:</strong> {{ s.syllabus }}</div>{% endif %}
+        </div>
+        {% endif %}
+        <div class="card-actions">
+          <a href="/schedule/edit/{{ s.type|lower|replace(' ','_') }}/{{ s._id }}" class="btn btn-ghost btn-sm">Edit</a>
+          <form method="POST" action="/schedule/delete/{{ s.type|lower|replace(' ','_') }}/{{ s._id }}" style="display:inline" onsubmit="return confirm('Delete this schedule?')">
+            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+      {% else %}
+      <div class="empty">No schedules yet ✨<br>Click "+ Add New" to create one.</div>
+      {% endif %}
+      <div id="emptyMsg" class="empty" style="display:none">No matching schedules found 🔍</div>
+    </div>
+
+  </div>
+
+  <!-- Add modal -->
+  <div id="addForm" class="modal-overlay">
+    <div class="modal-box">
+      <h2>Add Schedule</h2>
+      <form method="POST" action="/schedule/add">
+        <label>Type</label>
+        <select name="type" required>
+          {% for t in types %}<option value="{{ t }}">{{ t }}</option>{% endfor %}
+        </select>
+        <label>Subject</label>
+        <input type="text" name="subject" required placeholder="e.g. CSE 2201">
+        <label>Teacher</label>
+        <input type="text" name="teacher" required placeholder="Teacher name">
+        <label>Date</label>
+        <input type="date" name="date">
+        <label>Time</label>
+        <input type="text" name="time" placeholder="e.g. 10:00 AM or TBD">
+        <label>Topic</label>
+        <input type="text" name="topic" placeholder="Optional">
+        <label>Syllabus</label>
+        <textarea name="syllabus" placeholder="Optional"></textarea>
+        <div class="actions">
+          <button type="submit" class="btn btn-primary">Save</button>
+          <button type="button" class="btn btn-ghost" onclick="document.getElementById('addForm').classList.remove('active')">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const addForm = document.getElementById('addForm');
+    addForm.addEventListener('click', e => { if (e.target === addForm) addForm.classList.remove('active'); });
+
+    function filterSchedules() {
+      const q = document.getElementById('searchInput').value.toLowerCase();
+      const f = document.querySelector('.filter-btn.active').dataset.filter;
+      let n = 0;
+      document.querySelectorAll('.schedule-card').forEach(c => {
+        const match = (c.dataset.subject + c.dataset.teacher + c.dataset.topic).toLowerCase().includes(q)
+                   && (f === 'all' || c.dataset.type === f);
+        c.style.display = match ? '' : 'none';
+        if (match) n++;
+      });
+      document.getElementById('emptyMsg').style.display = n === 0 ? 'block' : 'none';
+    }
+
+    document.getElementById('searchInput').addEventListener('input', filterSchedules);
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        filterSchedules();
+      });
+    });
+  </script>
+
+  <div id="toast"></div>
+</body>
+</html>
