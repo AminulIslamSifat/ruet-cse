@@ -525,3 +525,66 @@ hr-sep  { border: 0; border-top: 1px solid var(--border); margin: 1.5rem 0; }
 .add-exp-form { margin-top: .75rem; padding-top: .75rem; border-top: 1px dashed var(--border); }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
 
+
+/* ── Admin Panel ─────────────────────────────── */
+.admin-user-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .9rem 1.1rem;
+}
+.admin-user-info { flex: 1; min-width: 0; }
+.admin-user-top {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  margin-bottom: .25rem;
+}
+.admin-roll {
+  font-weight: 700;
+  font-size: .95rem;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.admin-user-name {
+  font-size: .85rem;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.admin-user-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: .72rem;
+  color: var(--muted);
+  margin-top: .2rem;
+}
+.admin-user-action { flex-shrink: 0; }
+.badge-admin {
+  background: var(--success-soft);
+  color: var(--success);
+  border: 1px solid rgba(16,185,129,.25);
+}
+.badge-user {
+  background: var(--primary-soft);
+  color: var(--accent);
+  border: 1px solid rgba(124,58,237,.2);
+}
+
+@media (max-width: 600px) {
+  .admin-user-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: .65rem;
+  }
+  .admin-user-action .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .admin-user-meta {
+    flex-direction: column;
+    gap: .15rem;
+  }
+}

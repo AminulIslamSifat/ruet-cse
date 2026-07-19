@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login — RUET CSE</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="narrow" style="margin-top: 15vh;">
+    <div class="card" style="padding: 2rem;">
+      <h1 style="font-size: 1.3rem; color: var(--accent); margin-bottom: .3rem;">🔐 Admin Login</h1>
+      <p style="font-size: .8rem; color: var(--muted); margin-bottom: 1.5rem;">Restricted area. Authorized personnel only.</p>
+
+      {% if error %}
+      <div style="background: var(--danger-soft); border: 1px solid rgba(239,68,68,.25); color: var(--danger); padding: .6rem .9rem; border-radius: 6px; font-size: .82rem; margin-bottom: 1rem;">
+        {{ error }}
+      </div>
+      {% endif %}
+
+      <form method="POST" action="/admin/login">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required autocomplete="username" placeholder="admin">
+
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="••••••••">
+
+        <div class="actions" style="margin-top: 1.5rem;">
+          <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">Login</button>
+          <a href="/" class="btn btn-ghost" style="width: 100%; justify-content: center;">← Back to Home</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

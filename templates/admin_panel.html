@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel — RUET CSE</title>
+  <link rel="stylesheet" href="/static/style.css">
+<style>
+/* ── Loading spinner ── */
+.loading-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .75rem;
+  padding: 3rem 0;
+  color: var(--muted);
+  font-size: .85rem;
+}
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <h1>🛡️ Admin Panel</h1>
+      <a href="/admin/logout" class="btn btn-danger btn-sm">Logout</a>
+      <a href="/" class="btn btn-ghost btn-sm">← Home</a>
+    </div>
+
+    <div class="controls">
+      <input type="text" id="searchInput" class="search-input" placeholder="Search by roll, name or user ID…">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="admin">Admins</button>
+      <button class="filter-btn" data-filter="user">Users</button>
+    </div>
+
+    <div id="userCount" style="font-size:.75rem; color:var(--muted); margin-bottom:.75rem;"></div>
+
+    <div id="loadingState" class="loading-wrap">
+      <div class="spinner"></div>
+      <p>Loading users from MongoDB…</p>
+    </div>
+    <div id="userList"></div>
+
+    <div class="empty hidden" id="emptyState">No users found.</div>
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal-box">
+      <h2 id="confirmTitle">Confirm</h2>
+      <p id="confirmMsg" style="font-size:.85rem; color:var(--muted); margin:.75rem 0 1.25rem;"></p>
+      <div class="actions">
+        <button class="btn btn-primary" id="confirmYes">Confirm</button>
+        <button class="btn btn-ghost" id="confirmNo">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    let allUsers = [];
+    let currentFilter = "all";
+    let pendingAction = null;
+
+    const $ = id => document.getElementById(id);
+
+    // ── Load users ──
+    async function loadUsers() {
+      $("loadingState").style.display = "flex";
+      $("userList").innerHTML = "";
+      try {
+        const res = await fetch("/admin/api/users");
+        if (!res.ok) { window.location.href = "/admin/login"; return; }
+        allUsers = await res.json();
+        $("loadingState").style.display = "none";
+        renderUsers();
+      } catch (e) {
+        $("loadingState").style.display = "none";
+        toast("Failed to load users", "error");
+      }
+    }
+
+    // ── Render ──
+    function renderUsers() {
+      const q = $("searchInput").value.toLowerCase().trim();
+      const list = $("userList");
+      let filtered = allUsers.filter(u => {
+        const matchSearch = !q ||
+          u.roll.toLowerCase().includes(q) ||
+          (u.name || "").toLowerCase().includes(q) ||
+          (u.user_id || "").toLowerCase().includes(q);
+        const matchFilter = currentFilter === "all" || u.status === currentFilter;
+        return matchSearch && matchFilter;
+      });
+
+      $("userCount").textContent = `${filtered.length} of ${allUsers.length} users`;
+      $("emptyState").classList.toggle("hidden", filtered.length > 0);
+
+      list.innerHTML = filtered.map(u => `
+        <div class="card admin-user-card" data-status="${u.status}">
+          <div class="admin-user-info">
+            <div class="admin-user-top">
+              <span class="admin-roll">${u.roll}</span>
+              <span class="badge ${u.status === 'admin' ? 'badge-admin' : 'badge-user'}">${u.status}</span>
+            </div>
+            <div class="admin-user-name">${u.name || 'Unknown'}</div>
+            <div class="admin-user-meta">
+              <span>Sec: ${u.section || '—'}</span>
+              <span>ID: ${u.user_id || '—'}</span>
+            </div>
+          </div>
+          <div class="admin-user-action">
+            ${u.status === 'admin'
+              ? `<button class="btn btn-danger btn-sm" onclick="askDemote('${u.roll}','${(u.name||'').replace(/'/g,"\\'")}')">Demote</button>`
+              : `<button class="btn btn-success btn-sm" onclick="askPromote('${u.roll}','${u.user_id||''}','${(u.name||'').replace(/'/g,"\\'")}')">Promote</button>`
+            }
+          </div>
+        </div>
+      `).join("");
+    }
+
+    // ── Confirm modal ──
+    function showModal(title, msg, onConfirm) {
+      $("confirmTitle").textContent = title;
+      $("confirmMsg").textContent = msg;
+      $("confirmModal").classList.add("active");
+      pendingAction = onConfirm;
+    }
+    function hideModal() {
+      $("confirmModal").classList.remove("active");
+      pendingAction = null;
+    }
+    $("confirmYes").onclick = () => { if (pendingAction) pendingAction(); hideModal(); };
+    $("confirmNo").onclick = hideModal;
+    $("confirmModal").onclick = e => { if (e.target === $("confirmModal")) hideModal(); };
+
+    function askPromote(roll, userId, name) {
+      showModal("Promote to Admin",
+        `Make ${name || roll} an admin? They will gain admin privileges.`,
+        () => doPromote(roll, userId));
+    }
+    function askDemote(roll, name) {
+      showModal("Demote Admin",
+        `Remove admin status from ${name || roll}?`,
+        () => doDemote(roll));
+    }
+
+    async function doPromote(roll, userId) {
+      try {
+        const res = await fetch("/admin/promote", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({roll, user_id: userId})
+        });
+        const data = await res.json();
+        if (data.ok) { toast(`${roll} promoted to admin ✓`, "ok"); loadUsers(); }
+        else toast(data.error || "Failed", "error");
+      } catch { toast("Network error", "error"); }
+    }
+
+    async function doDemote(roll) {
+      try {
+        const res = await fetch("/admin/demote", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({roll})
+        });
+        const data = await res.json();
+        if (data.ok) { toast(`${roll} demoted to user`, "ok"); loadUsers(); }
+        else toast(data.error || "Failed", "error");
+      } catch { toast("Network error", "error"); }
+    }
+
+    // ── Toast ──
+    function toast(msg, type) {
+      const t = $("toast");
+      t.textContent = msg;
+      t.className = "show " + (type || "");
+      setTimeout(() => t.className = "", 2500);
+    }
+
+    // ── Filters ──
+    document.querySelectorAll(".filter-btn").forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentFilter = btn.dataset.filter;
+        renderUsers();
+      };
+    });
+    $("searchInput").oninput = renderUsers;
+
+    loadUsers();
+  </script>
+</body>
+</html>

@@ -5,12 +5,13 @@ import os
 import json
 from pathlib import Path
 from urllib.parse import quote_plus
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 import bson
 from datetime import datetime, date, timezone, timedelta
 import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 app = Flask(__name__)
 
@@ -23,6 +24,12 @@ MONGODB_USER_PASSWORD = os.environ.get("MONGODB_USER_PASSWORD", "")
 client       = MongoClient(f"mongodb+srv://{quote_plus(MONGODB_USERNAME)}:{quote_plus(MONGODB_USER_PASSWORD)}@cluster0.5ckeilq.mongodb.net/?appName=Cluster0")
 schedule_db  = client["schedule"]
 phantom_db   = client["phantom_bot_db"]
+
+# ── Admin Auth ────────────────────────────────────────────────────────────
+app.secret_key = os.environ.get("SECRET_KEY", "ruet-cse-change-this-secret")
+ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "admin")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin123")
+
 
 SCHEDULE_TYPES = ["CT", "Assignment", "Semester Final", "Backlog"]
 
@@ -355,6 +362,116 @@ def delete_teacher_subject(oid):
     except bson.errors.InvalidId:
         return "Invalid ID", 404
     return redirect(url_for("teachers"))
+
+
+
+# ────────────────────────────────────────────────────────────────────────────
+# Admin Panel — user management
+# ────────────────────────────────────────────────────────────────────────────
+def load_users():
+    """Load all active users from phantom_bot_db numeric collections."""
+    try:
+        collections = phantom_db.list_collection_names()
+        user_collections = []
+        for x in collections:
+            if x == "2400000":
+                continue
+            try:
+                int(x)
+                user_collections.append(str(x))
+            except ValueError:
+                continue
+
+        admin_rolls = {
+            doc["roll"] for doc in phantom_db["admin"].find()
+        }
+
+        def fetch_user(roll):
+            user_data = phantom_db[roll].find_one({"roll": roll})
+            if user_data and user_data.get("user_id"):
+                return {
+                    "roll": roll,
+                    "name": user_data.get("name", "Unknown"),
+                    "section": user_data.get("section", ""),
+                    "user_id": user_data.get("user_id"),
+                    "status": "admin" if roll in admin_rolls else "user",
+                }
+            return None
+
+        users = []
+        with ThreadPoolExecutor(max_workers=20) as pool:
+            futures = {pool.submit(fetch_user, roll): roll for roll in user_collections}
+            for future in as_completed(futures):
+                result = future.result()
+                if result:
+                    users.append(result)
+
+        users.sort(key=lambda u: u["roll"])
+        return users
+    except Exception as e:
+        print(f"[load_users] Error: {e}")
+        return []
+
+
+@app.route("/admin/login", methods=["GET", "POST"])
+def admin_login():
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "").strip()
+        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+            session["admin_logged_in"] = True
+            return redirect(url_for("admin_panel"))
+        return render_template("admin_login.html", error="Invalid credentials")
+    return render_template("admin_login.html")
+
+
+@app.route("/admin/logout")
+def admin_logout():
+    session.pop("admin_logged_in", None)
+    return redirect(url_for("home"))
+
+
+@app.route("/admin")
+def admin_panel():
+    if not session.get("admin_logged_in"):
+        return redirect(url_for("admin_login"))
+    return render_template("admin_panel.html")
+
+
+@app.route("/admin/api/users")
+def admin_api_users():
+    if not session.get("admin_logged_in"):
+        return jsonify({"error": "Unauthorized"}), 401
+    return jsonify(load_users())
+
+
+@app.route("/admin/promote", methods=["POST"])
+def admin_promote():
+    if not session.get("admin_logged_in"):
+        return jsonify({"error": "Unauthorized"}), 401
+    data = request.get_json(silent=True) or {}
+    roll = data.get("roll", "").strip()
+    user_id = data.get("user_id", "").strip()
+    if not roll:
+        return jsonify({"error": "Roll required"}), 400
+    phantom_db["admin"].update_one(
+        {"roll": roll},
+        {"$set": {"roll": roll, "user_id": user_id, "promoted_at": datetime.utcnow()}},
+        upsert=True,
+    )
+    return jsonify({"ok": True, "roll": roll, "status": "admin"})
+
+
+@app.route("/admin/demote", methods=["POST"])
+def admin_demote():
+    if not session.get("admin_logged_in"):
+        return jsonify({"error": "Unauthorized"}), 401
+    data = request.get_json(silent=True) or {}
+    roll = data.get("roll", "").strip()
+    if not roll:
+        return jsonify({"error": "Roll required"}), 400
+    phantom_db["admin"].delete_one({"roll": roll})
+    return jsonify({"ok": True, "roll": roll, "status": "user"})
 
 
 if __name__ == "__main__":
