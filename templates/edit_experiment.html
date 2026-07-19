@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Edit {{ subject.subject }} Experiments</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
@@ -39,6 +39,7 @@
   <div class="section-title">Experiments / Assignments</div>
 
   {% if experiments %}
+  <div class="table-scroll">
   <table class="exp-table">
     <thead>
       <tr>
@@ -69,6 +70,7 @@
     {% endfor %}
     </tbody>
   </table>
+  </div>
   {% else %}
   <div class="empty-row">No experiments added yet.</div>
   {% endif %}

@@ -182,9 +182,9 @@ function buildDayCard(dayInfo, dayIdx) {
     colHdr.innerHTML = `
         <span>#</span>
         <span>Course</span>
-        <span>Teacher / Room</span>
-        <span>Roll group</span>
-        <span>Span</span>
+        <span class="tc">Teacher / Room</span>
+        <span class="rc">Roll group</span>
+        <span class="sc">Span</span>
         <span>Lab</span>
         <span></span>
     `;
@@ -245,6 +245,7 @@ function buildSlotRow(slot, sIdx, dayInfo, slotList, card) {
 
     /* course */
     const courseIn = document.createElement('input');
+    courseIn.className = 'slot-course';
     courseIn.type = 'text';
     courseIn.value = slot.course || '';
     courseIn.placeholder = '— empty —';
@@ -255,6 +256,7 @@ function buildSlotRow(slot, sIdx, dayInfo, slotList, card) {
 
     /* teacher */
     const teachIn = document.createElement('input');
+    teachIn.className = 'tc';
     teachIn.type = 'text';
     teachIn.value = slot.teacher || '';
     teachIn.placeholder = 'Teacher / Room';
@@ -265,6 +267,7 @@ function buildSlotRow(slot, sIdx, dayInfo, slotList, card) {
 
     /* roll */
     const rollIn = document.createElement('input');
+    rollIn.className = 'rc';
     rollIn.type = 'text';
     rollIn.value = slot.roll || '';
     rollIn.placeholder = 'e.g. 1-30';
@@ -275,6 +278,7 @@ function buildSlotRow(slot, sIdx, dayInfo, slotList, card) {
 
     /* colspan ─ validated against remaining space */
     const spanIn = document.createElement('input');
+    spanIn.className = 'sc';
     spanIn.type = 'number';
     spanIn.value = slot.colspan || 1;
     spanIn.min = 1;

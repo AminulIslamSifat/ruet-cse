@@ -377,6 +377,10 @@ a {
     display: none !important;
 }
 
+.mobile-back {
+    display: none;
+}
+
 @media (max-width: 760px) {
     .page {
         width: min(100%, calc(100% - 20px));
@@ -459,4 +463,99 @@ a {
 
 .routine-table {
     font-size: 1.5rem; /* or 16px, 18px, etc */
+}
+
+/* ── Mobile routine display (placed last to override desktop rules above) ── */
+@media (max-width: 760px) {
+    html, body {
+        overflow-x: hidden;
+    }
+
+    .mobile-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        position: fixed;
+        top: max(10px, env(safe-area-inset-top));
+        left: max(10px, env(safe-area-inset-left));
+        z-index: 20;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.92);
+        border: 1px solid var(--border);
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.12);
+        color: var(--muted);
+        font-size: 0.82rem;
+        font-weight: 600;
+        backdrop-filter: blur(8px);
+    }
+
+    .full-bleed.page {
+        min-height: 100svh;
+        height: 100svh;
+    }
+
+    .full-bleed.routine-layout {
+        min-height: 100svh;
+        height: 100svh;
+    }
+
+    .full-bleed .table-wrap {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-x: contain;
+    }
+
+    .routine-table {
+        font-size: 0.82rem;
+        min-width: 680px;
+    }
+
+    .routine-table thead th {
+        font-size: 0.62rem;
+        letter-spacing: 0.05em;
+        padding: 8px 6px;
+    }
+
+    .routine-table th,
+    .routine-table td {
+        padding: 8px 6px;
+    }
+
+    .routine-table .label-cell {
+        font-size: 0.72rem;
+        box-shadow: 4px 0 10px rgba(15, 23, 42, 0.08);
+    }
+
+    .full-bleed .routine-table .course {
+        font-size: 0.82rem;
+    }
+
+    .full-bleed .routine-table .teacher {
+        font-size: 0.72rem;
+    }
+
+    .full-bleed .routine-table .pill {
+        font-size: 0.68rem;
+        margin-top: 4px;
+        padding: 2px 7px;
+    }
+
+    .full-bleed .routine-table .empty-slot {
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 420px) {
+    .routine-table {
+        font-size: 0.75rem;
+        min-width: 580px;
+    }
+
+    .routine-table thead th {
+        font-size: 0.55rem;
+    }
+
+    .routine-table .label-cell {
+        font-size: 0.65rem;
+    }
 }

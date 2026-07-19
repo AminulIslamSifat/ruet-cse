@@ -317,11 +317,178 @@ textarea { resize: vertical; min-height: 60px; }
 hr-sep  { border: 0; border-top: 1px solid var(--border); margin: 1.5rem 0; }
 
 @media (max-width: 600px) {
-  body { padding: 1rem; }
-  .card-grid { grid-template-columns: 1fr 1fr; }
-  .slot-header-row, .slot-row { grid-template-columns: 22px 1fr 60px 30px; }
-  .slot-row .tc, .slot-row .rc, .slot-row .sc, .slot-header-row .tc,
-  .slot-header-row .rc, .slot-header-row .sc { display: none; }
+  body {
+    padding: 1rem;
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    overflow-x: hidden;
+  }
+
+  /* ── Homepage ── */
+  .hero { margin-bottom: 1.25rem; }
+  .card-grid { grid-template-columns: 1fr 1fr; gap: .75rem; }
+  .nav-card { padding: 1rem 1.1rem; }
+  .nav-card h2 { font-size: .92rem; }
+  .nav-card p  { font-size: .75rem; }
+
+  /* ── Top bars & nav ── */
+  .topbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: .65rem;
+    margin-bottom: 1.1rem;
+  }
+  .topbar h1 { flex: none; font-size: 1.1rem; }
+  .topbar .btn,
+  .topbar select { width: 100%; justify-content: center; }
+  .topbar select { flex: none !important; }
+
+  .top-nav {
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin-bottom: 1.25rem;
+  }
+  .page-title { font-size: 1.1rem; flex-wrap: wrap; }
+
+  /* ── Section headers ── */
+  .section-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: .65rem;
+  }
+  .section-header .btn { width: 100%; justify-content: center; }
+
+  /* ── Schedule search / filters ── */
+  .controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .5rem;
+    align-items: stretch;
+  }
+  .search-input {
+    grid-column: 1 / -1;
+    min-width: 0;
+    width: 100%;
+  }
+  .controls .filter-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* ── Cards & lists ── */
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .35rem;
+  }
+  .card-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .25rem;
+  }
+  .card-meta span { display: block; }
+  .card-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .card-actions .btn,
+  .card-actions form,
+  .card-actions form button { width: 100%; }
+  .card-actions form { display: block !important; }
+  .teachers-preview { word-break: break-word; line-height: 1.45; }
+
+  /* ── Forms & grids ── */
+  .grid-2 { grid-template-columns: 1fr; }
+  .section { padding: 1rem; border-radius: 10px; }
+  .actions,
+  .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .actions .btn,
+  .form-actions .btn { width: 100%; justify-content: center; }
+
+  .wide h1 {
+    font-size: 1.2rem;
+    margin: .75rem 0 1rem;
+    color: var(--accent);
+  }
+
+  /* ── Experiment table scroll ── */
+  .table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -.25rem;
+    padding: 0 .25rem;
+  }
+  .exp-table { min-width: 420px; }
+
+  /* ── Modals (bottom sheet) ── */
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .modal-box {
+    width: 100%;
+    max-width: none;
+    border-radius: 14px 14px 0 0;
+    max-height: min(92vh, 92dvh);
+    overflow-y: auto;
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+  }
+
+  /* ── Routine editor ── */
+  .slot-header-row,
+  .slot-row {
+    grid-template-columns: 22px minmax(0, 1fr) 52px 44px 32px;
+    gap: .35rem;
+    padding: .45rem .65rem;
+  }
+  .slot-row .tc,
+  .slot-row .rc,
+  .slot-header-row .tc,
+  .slot-header-row .rc { display: none; }
+
+  .day-header { flex-wrap: wrap; gap: .5rem; }
+  .day-header input { min-width: 0 !important; width: 100% !important; flex: 1 1 100% !important; }
+  .day-actions {
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .save-bar {
+    position: sticky;
+    bottom: 0;
+    margin: 1rem -1rem 0;
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    padding-bottom: max(.7rem, env(safe-area-inset-bottom));
+  }
+
+  /* ── Routine table (if shown via style.css) ── */
+  .routine-wrap,
+  .table-scroll {
+    -webkit-overflow-scrolling: touch;
+  }
+  .routine-table .label-cell {
+    box-shadow: 4px 0 8px rgba(0, 0, 0, .25);
+  }
+
+  /* ── Toast ── */
+  #toast {
+    left: 1rem;
+    right: 1rem;
+    bottom: max(1rem, env(safe-area-inset-bottom));
+    text-align: center;
+  }
+}
+
+@media (max-width: 400px) {
+  .card-grid { grid-template-columns: 1fr; }
+  .controls { grid-template-columns: 1fr; }
 }
 
 /* ── Academic Consolidated Styles ── */
