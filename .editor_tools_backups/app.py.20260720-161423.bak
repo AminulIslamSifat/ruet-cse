@@ -11,6 +11,7 @@ from bson.objectid import ObjectId
 import bson
 from datetime import datetime, date, timezone, timedelta
 import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 app = Flask(__name__)
 
@@ -368,31 +369,42 @@ def delete_teacher_subject(oid):
 # Admin Panel — user management
 # ────────────────────────────────────────────────────────────────────────────
 def load_users():
-    """Load all active users from the unified phantom_bot_db.users collection."""
+    """Load all active users from phantom_bot_db numeric collections."""
     try:
+        collections = phantom_db.list_collection_names()
+        user_collections = []
+        for x in collections:
+            if x == "2400000":
+                continue
+            try:
+                int(x)
+                user_collections.append(str(x))
+            except ValueError:
+                continue
+
         admin_rolls = {
-            str(doc["roll"])
-            for doc in phantom_db["admin"].find()
-            if doc.get("roll") is not None
+            doc["roll"] for doc in phantom_db["admin"].find()
         }
 
+        def fetch_user(roll):
+            user_data = phantom_db[roll].find_one({"roll": roll})
+            if user_data and user_data.get("user_id"):
+                return {
+                    "roll": roll,
+                    "name": user_data.get("name", "Unknown"),
+                    "section": user_data.get("section", ""),
+                    "user_id": user_data.get("user_id"),
+                    "status": "admin" if roll in admin_rolls else "user",
+                }
+            return None
+
         users = []
-        for user_data in phantom_db["users"].find({}):
-            roll = user_data.get("roll")
-            if roll is None:
-                continue
-
-            roll = str(roll)
-            if not user_data.get("user_id"):
-                continue
-
-            users.append({
-                "roll": roll,
-                "name": user_data.get("name", "Unknown"),
-                "section": user_data.get("section", ""),
-                "user_id": user_data.get("user_id"),
-                "status": "admin" if roll in admin_rolls else "user",
-            })
+        with ThreadPoolExecutor(max_workers=20) as pool:
+            futures = {pool.submit(fetch_user, roll): roll for roll in user_collections}
+            for future in as_completed(futures):
+                result = future.result()
+                if result:
+                    users.append(result)
 
         users.sort(key=lambda u: u["roll"])
         return users
