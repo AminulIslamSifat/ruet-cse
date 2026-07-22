@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "app.py", "use": "@vercel/python" },
+    { "src": "api/routine-image.js", "use": "@vercel/node" }
+  ],
+  "functions": {
+    "api/routine-image.js": {
+      "memory": 1024,
+      "maxDuration": 60,
+      "includeFiles": "node_modules/@sparticuz/chromium/**"
+    }
+  },
+  "routes": [
+    { "src": "/api/routine-image", "dest": "api/routine-image.js" },
+    { "src": "/(.*)", "dest": "app.py" }
+  ]
+}
