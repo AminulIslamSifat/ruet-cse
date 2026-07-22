@@ -231,7 +231,7 @@ a {
 .teacher {
     display: block;
     color: var(--muted);
-    font-size: 1.26rem;
+    font-size: 1.51rem;
     line-height: 1.35;
 }
 
@@ -254,7 +254,7 @@ a {
     border-radius: 999px;
     background: rgba(29, 78, 216, 0.1);
     color: var(--accent);
-    font-size: 26.4px;
+    font-size: 30.4px;
     font-weight: 700;
 }
 
