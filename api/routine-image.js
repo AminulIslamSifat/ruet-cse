@@ -12,7 +12,7 @@ module.exports = async (req, res) => {
   try {
     const execPath = await chromium.executablePath();
 
-    // Ensure bundled shared libraries (.so) are discoverable by the loader
+    // Ensure bundled shared libraries (.so) are discoverable by the loader, hello
     const libDir = path.dirname(execPath);
     process.env.LD_LIBRARY_PATH = [libDir, process.env.LD_LIBRARY_PATH || ""]
       .filter(Boolean)
@@ -56,3 +56,8 @@ module.exports = async (req, res) => {
     if (browser) await browser.close();
   }
 };
+
+
+
+
+
