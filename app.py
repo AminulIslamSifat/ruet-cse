@@ -11,6 +11,7 @@ from bson.objectid import ObjectId
 import bson
 from datetime import datetime, date, timezone, timedelta
 import re
+from concurrent.futures import ThreadPoolExecutor
 
 app = Flask(__name__)
 
@@ -31,6 +32,11 @@ ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin123")
 
 
 SCHEDULE_TYPES = ["CT", "Assignment", "Semester Final", "Backlog"]
+
+_home_stats_cache = {"data": None, "expires_at": None}
+
+def clear_home_stats_cache():
+    _home_stats_cache["data"] = None
 
 
 def get_collection(schedule_type: str):
@@ -68,9 +74,38 @@ def _load_routine(week: str) -> dict:
 
 @app.route("/")
 def home():
-    schedule_count   = sum(get_collection(t).count_documents({}) for t in SCHEDULE_TYPES)
-    teachers_count   = phantom_db["subject_teachers"].count_documents({})
-    experiments_count = phantom_db["subject_experiments"].count_documents({})
+    now = datetime.now(timezone.utc)
+    if _home_stats_cache["data"] is not None and _home_stats_cache["expires_at"] > now:
+        cached = _home_stats_cache["data"]
+        return render_template("index.html",
+            schedule_count=cached["schedule_count"],
+            teachers_count=cached["teachers_count"],
+            experiments_count=cached["experiments_count"],
+        )
+
+    def get_count(coll_name_or_type, is_phantom=False):
+        coll = phantom_db[coll_name_or_type] if is_phantom else get_collection(coll_name_or_type)
+        try:
+            return coll.estimated_document_count()
+        except Exception:
+            return coll.count_documents({})
+
+    jobs = [(t, False) for t in SCHEDULE_TYPES] + [("subject_teachers", True), ("subject_experiments", True)]
+    with ThreadPoolExecutor(max_workers=6) as executor:
+        results = list(executor.map(lambda args: get_count(*args), jobs))
+
+    schedule_count = sum(results[:4])
+    teachers_count = results[4]
+    experiments_count = results[5]
+
+    cached_data = {
+        "schedule_count": schedule_count,
+        "teachers_count": teachers_count,
+        "experiments_count": experiments_count
+    }
+    _home_stats_cache["data"] = cached_data
+    _home_stats_cache["expires_at"] = now + timedelta(seconds=60)
+
     return render_template("index.html",
         schedule_count=schedule_count,
         teachers_count=teachers_count,
@@ -134,11 +169,12 @@ def routine_save():
 
 @app.route("/schedule")
 def schedule_index():
-    upcoming = []
     tz_dhaka = timezone(timedelta(hours=6))
     today = datetime.now(tz_dhaka).date()
-    for stype in SCHEDULE_TYPES:
-        for doc in get_collection(stype).find():
+
+    def fetch_type(stype):
+        docs = list(get_collection(stype).find())
+        for doc in docs:
             doc["_id"] = str(doc["_id"])
             doc["type"] = stype
             doc["countdown"] = doc["countdown_class"] = ""
@@ -151,7 +187,15 @@ def schedule_index():
                     else:            doc["countdown"], doc["countdown_class"] = f"{abs(delta)}d ago", "past"
                 except Exception:
                     pass
-            upcoming.append(doc)
+        return docs
+
+    with ThreadPoolExecutor(max_workers=len(SCHEDULE_TYPES)) as executor:
+        results = executor.map(fetch_type, SCHEDULE_TYPES)
+
+    upcoming = []
+    for res in results:
+        upcoming.extend(res)
+
     upcoming.sort(key=lambda s: (s.get("date") or "9999-12-31", s.get("time") or ""))
     return render_template("schedule_index.html", schedules=upcoming, types=SCHEDULE_TYPES)
 
@@ -173,6 +217,7 @@ def add_schedule():
         "topic":    request.form.get("topic", "").strip(),
         "syllabus": request.form.get("syllabus", "").strip(),
     })
+    clear_home_stats_cache()
     return redirect(url_for("schedule_index"))
 
 
@@ -215,6 +260,7 @@ def delete_schedule(stype, oid):
         return "Invalid schedule type", 400
     try:
         get_collection(matched).delete_one({"_id": ObjectId(oid)})
+        clear_home_stats_cache()
     except bson.errors.InvalidId:
         return "Invalid ID", 404
     return redirect(url_for("schedule_index"))
@@ -243,6 +289,7 @@ def add_experiment_subject():
         phantom_db["subject_experiments"].insert_one({
             "subject": subject, "normalized": norm, "type": stype, "experiments": {}
         })
+        clear_home_stats_cache()
     return redirect(url_for("experiments"))
 
 
@@ -291,6 +338,7 @@ def edit_experiment_subject(oid):
 def delete_experiment_subject(oid):
     try:
         phantom_db["subject_experiments"].delete_one({"_id": ObjectId(oid)})
+        clear_home_stats_cache()
     except bson.errors.InvalidId:
         return "Invalid ID", 404
     return redirect(url_for("experiments"))
@@ -321,6 +369,7 @@ def add_teacher_subject():
             "subject": subject, "normalized": norm, "title": title,
             "type": stype, "1": {}, "2": {}
         })
+        clear_home_stats_cache()
     return redirect(url_for("teachers"))
 
 
@@ -358,6 +407,7 @@ def edit_teacher_subject(oid):
 def delete_teacher_subject(oid):
     try:
         phantom_db["subject_teachers"].delete_one({"_id": ObjectId(oid)})
+        clear_home_stats_cache()
     except bson.errors.InvalidId:
         return "Invalid ID", 404
     return redirect(url_for("teachers"))
@@ -370,14 +420,25 @@ def delete_teacher_subject(oid):
 def load_users():
     """Load all active users from the unified phantom_bot_db.users collection."""
     try:
+        def fetch_admins():
+            return list(phantom_db["admin"].find())
+        def fetch_users():
+            return list(phantom_db["users"].find({}))
+
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            fut_admins = executor.submit(fetch_admins)
+            fut_users = executor.submit(fetch_users)
+            admins_docs = fut_admins.result()
+            users_docs = fut_users.result()
+
         admin_rolls = {
             str(doc["roll"])
-            for doc in phantom_db["admin"].find()
+            for doc in admins_docs
             if doc.get("roll") is not None
         }
 
         users = []
-        for user_data in phantom_db["users"].find({}):
+        for user_data in users_docs:
             roll = user_data.get("roll")
             if roll is None:
                 continue
