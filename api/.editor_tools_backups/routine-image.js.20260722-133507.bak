@@ -1,6 +1,5 @@
 const chromium = require("@sparticuz/chromium");
 const puppeteer = require("puppeteer-core");
-const path = require("path");
 
 module.exports = async (req, res) => {
   const week = (req.query.week || "odd").toLowerCase();
@@ -10,23 +9,9 @@ module.exports = async (req, res) => {
 
   let browser;
   try {
-    const execPath = await chromium.executablePath();
-
-    // Ensure bundled shared libraries (.so) are discoverable by the loader
-    const libDir = path.dirname(execPath);
-    process.env.LD_LIBRARY_PATH = [libDir, process.env.LD_LIBRARY_PATH || ""]
-      .filter(Boolean)
-      .join(":");
-
     browser = await puppeteer.launch({
-      args: [
-        ...chromium.args,
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-        "--single-process",
-      ],
-      executablePath: execPath,
+      args: chromium.args,
+      executablePath: await chromium.executablePath(),
       headless: chromium.headless,
     });
 
