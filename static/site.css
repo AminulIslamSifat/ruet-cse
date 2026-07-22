@@ -220,6 +220,7 @@ a {
     text-align: center;
     font-weight: 700;
     white-space: nowrap;
+    font-size: 1.2em;
 }
 
 .course {
@@ -231,7 +232,7 @@ a {
 .teacher {
     display: block;
     color: var(--muted);
-    font-size: 1.51rem;
+    font-size: 1.35rem;
     line-height: 1.35;
 }
 
