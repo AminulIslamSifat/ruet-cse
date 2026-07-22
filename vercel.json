@@ -1,13 +1,9 @@
 {
   "version": 2,
-  "functions": {
-    "api/routine-image.js": {
-      "memory": 1024,
-      "maxDuration": 60,
-      "includeFiles": "node_modules/@sparticuz/chromium/**"
-    }
-  },
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/app.py" }
+  "builds": [
+    { "src": "app.py", "use": "@vercel/python" }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "app.py" }
   ]
 }

@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "functions": {
+    "api/routine-image.js": {
+      "memory": 1024,
+      "maxDuration": 60,
+      "includeFiles": "node_modules/@sparticuz/chromium/**"
+    }
+  },
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/app.py" }
+  ]
+}

@@ -119,7 +119,7 @@ def routine_save():
     try:
         phantom_db["routine"].replace_one(
             {"_id": f"{week}_week"},
-            {"_id": f"{week}_week", "week": week, **data, "updated_at": datetime.utcnow()},
+            {"_id": f"{week}_week", "week": week, **data, "updated_at": datetime.now(timezone.utc)},
             upsert=True,
         )
     except Exception as e:
@@ -444,7 +444,7 @@ def admin_promote():
         return jsonify({"error": "Roll required"}), 400
     phantom_db["admin"].update_one(
         {"roll": roll},
-        {"$set": {"roll": roll, "user_id": user_id, "promoted_at": datetime.utcnow()}},
+        {"$set": {"roll": roll, "user_id": user_id, "promoted_at": datetime.now(timezone.utc)}},
         upsert=True,
     )
     return jsonify({"ok": True, "roll": roll, "status": "admin"})
