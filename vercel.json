@@ -1,9 +1,11 @@
 {
   "version": 2,
   "builds": [
-    { "src": "app.py", "use": "@vercel/python" }
+    { "src": "app.py", "use": "@vercel/python" },
+    { "src": "api/routine-image.js", "use": "@vercel/node" }
   ],
   "routes": [
+    { "src": "/api/routine-image", "dest": "api/routine-image.js" },
     { "src": "/(.*)", "dest": "app.py" }
   ]
 }
