@@ -188,7 +188,7 @@ a {
     min-width: 920px;
     border-collapse: collapse;
     background: var(--surface-solid);
-    font-size: 1.5rem;
+    font-size: 1.2rem;
 }
 
 .routine-table th,
@@ -206,7 +206,7 @@ a {
 }
 
 .routine-table thead th {
-    font-size: 30px;
+    font-size: 24px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: var(--muted);
@@ -225,12 +225,13 @@ a {
 .course {
     font-weight: 700;
     line-height: 1.25;
+    font-size: 1.2em;
 }
 
 .teacher {
     display: block;
     color: var(--muted);
-    font-size: 1.58rem;
+    font-size: 1.26rem;
     line-height: 1.35;
 }
 
@@ -238,7 +239,7 @@ a {
 .hint {
     display: block;
     color: var(--muted);
-    font-size: 1.38rem;
+    font-size: 1.1rem;
     line-height: 1.35;
 }
 
@@ -253,7 +254,7 @@ a {
     border-radius: 999px;
     background: rgba(29, 78, 216, 0.1);
     color: var(--accent);
-    font-size: 33px;
+    font-size: 26.4px;
     font-weight: 700;
 }
 
